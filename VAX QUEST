@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vax Quest: La Scelta Cruciale</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        .button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        progress {
+            width: 100%;
+            height: 20px;
+        }
+
+        #timer {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        #score {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        #feedback {
+            font-size: 16px;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+
+        #name-entry {
+            margin-bottom: 20px;
+        }
+        
+        #final-result {
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #final-message {
+            font-size: 20px;
+            margin-top: 30px;
+            font-style: italic;
+            color: #e74c3c;
+        }
+
+        #leaderboard {
+            font-size: 18px;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+        }
+
+        #leaderboard p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vax Quest: La Scelta Cruciale</h1>
+
+    <div id="name-entry">
+        <label for="username">Inserisci il tuo nome:</label>
+        <input type="text" id="username" placeholder="Inserisci il tuo nome" />
+        <button class="button" onclick="startGame()">Inizia il gioco</button>
+    </div>
+
+    <p id="story">Benvenuto in "Vax Quest: La Scelta Cruciale"! Ogni tua decisione avrà delle conseguenze. Sei pronto?</p>
+    <p id="timer">Tempo rimanente: <progress id="timerBar" value="60" max="60"></progress></p>
+    <p id="score">Punteggio: Etico: 0 | Salute Pubblica: 0 | Relazioni: 0</p>
+    <p id="feedback"></p>
+
+    <div id="choices"></div>
+
+    <div id="final-result"></div>
+    <p id="final-message"></p>
+
+    <div id="leaderboard">
+        <p><strong>Classifica Generale:</strong></p>
+        <div id="leaderboard-list"></div>
+    </div>
+
+    <script>
+        let ethicalScore = 0;
+        let publicHealthScore = 0;
+        let relationsScore = 0;
+        let timeRemaining = 60;
+        let timerInterval;
+        let isGameActive = false;
+        let username = '';
+        let leaderboard = [];
+
+        function updateScore(ethical, health, relations) {
+            ethicalScore += ethical;
+            publicHealthScore += health;
+            relationsScore += relations;
+            document.getElementById("score").innerHTML = `Punteggio: Etico: ${ethicalScore} | Salute Pubblica: ${publicHealthScore} | Relazioni: ${relationsScore}`;
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                } else {
+                    timeRemaining--;
+                    document.getElementById('timerBar').value = timeRemaining;
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            timeRemaining = 60;
+            document.getElementById('timerBar').value = timeRemaining;
+            clearInterval(timerInterval);
+            startTimer();
+        }
+
+        function handleTimeout() {
+            updateScore(-1, -2, -1);
+            document.getElementById('feedback').innerHTML = "Tempo scaduto! La situazione peggiora...";
+            endGame('negativo');
+        }
+
+        function startGame() {
+            username = document.getElementById('username').value;
+            if (username === '') {
+                alert('Per favore inserisci il tuo nome per iniziare.');
+                return;
+            }
+
+            document.getElementById('name-entry').style.display = 'none';
+            const story = document.getElementById('story');
+            const choices = document.getElementById('choices');
+
+            story.innerHTML = `Ciao ${username}, la pandemia è in corso e hai sentito parlare di un nuovo vaccino. Tuttavia, sui social media ci sono opinioni contrastanti. Qual è la tua prima azione?`;
+            choices.innerHTML = `
+                <button class="button" onclick="chooseVaccinate()">Vaccinati subito</button>
+                <button class="button" onclick="chooseResearch()">Ricerca informazioni</button>
+                <button class="button" onclick="chooseIgnore()">Ignora tutto</button>
+            `;
+            resetTimer();
+            isGameActive = true;
+        }
+
+        function chooseVaccinate() {
+            const story = document.getElementById('story');
+            const choices = document.getElementById('choices');
+
+            story.innerHTML = "Hai deciso di vaccinarti subito! Grazie a questa scelta, ti proteggi e contribuisci a ridurre il rischio per te e per la tua comunità. La tua responsabilità è un esempio per tutti!";
+            updateScore(2, 3, 1);
+
+            document.getElementById('feedback').innerHTML = "Ottima scelta! Hai fatto la differenza nella tua comunità!";
+            
+            choices.innerHTML = `
+                <button class="button" onclick="chooseWorkTogether()">Collaboriamo con gli altri</button>
+                <button class="button" onclick="chooseStaySafe()">Focalizzati sulla tua sicurezza</button>
+            `;
+        }
+
+        function chooseWorkTogether() {
+            const story = document.getElementById('story');
+            const choices = document.getElementById('choices');
+
+            story.innerHTML = "Hai deciso di incoraggiare gli altri a vaccinarsi e a seguire le misure di sicurezza. Le persone del campus rispondono positivamente e la comunità diventa più forte.";
+            updateScore(1, 2, 3);
+
+            choices.innerHTML = `
+                <button class="button" onclick="endGame('positivo')">Fai una presentazione di gruppo per sensibilizzare</button>
+                <button class="button" onclick="endGame('neutro')">Organizza una discussione informativa</button>
+            `;
+        }
+
+        function chooseStaySafe() {
+            const story = document.getElementById('story');
+            const choices = document.getElementById('choices');
+
+            story.innerHTML = "Decidi di concentrarti sulla tua sicurezza, evitando grandi assembramenti e seguendo tutte le precauzioni necessarie. Questo ti protegge, ma potresti perdere alcune opportunità di socializzazione.";
+            updateScore(2, 3, -1);
+
+            choices.innerHTML = `
+                <button class="button" onclick="endGame('positivo')">Partecipa a eventi online per restare in contatto</button>
+                <button class="button" onclick="endGame('neutro')">Continua ad evitare assembramenti fisici</button>
+            `;
+        }
+
+        function chooseResearch() {
+            const story = document.getElementById('story');
+            const choices = document.getElementById('choices');
+
+            story.innerHTML = "Hai scelto di informarti meglio. Dopo una ricerca accurata, scopri che il vaccino è sicuro ed efficace. Ora che sei meglio informato, cosa decidi di fare?";
+            choices.innerHTML = `
+                <button class="button" onclick="chooseVaccinate()">Vaccinati</button>
+                <button class="button" onclick="chooseIgnore()">Continua a ignorare</button>
+            `;
+        }
+
+        function chooseIgnore() {
+            const story = document.getElementById('story');
+            const choices = document.getElementById('choices');
+
+            story.innerHTML = "Decidi di ignorare la situazione. Le persone che non si sono vaccinate iniziano ad ammalarsi e il rischio per la comunità aumenta.";
+            updateScore(-2, -3, -2);
+
+            choices.innerHTML = `
+                <button class="button" onclick="endGame('negativo')">Rivaluta la tua scelta</button>
+                <button class="button" onclick="endGame('neutro')">Non fare nulla</button>
+            `;
+        }
+
+        function endGame(result) {
+            isGameActive = false;
+            const story = document.getElementById('story');
+            const choices = document.getElementById('choices');
+            const finalMessage = document.getElementById('final-message');
+            const finalResult = document.getElementById('final-result');
+
+            leaderboard.push({ name: username, score: ethicalScore + publicHealthScore + relationsScore });
+            leaderboard.sort((a, b) => (b.score - a.score));
+
+            const leaderboardList = document.getElementById('leaderboard-list');
+            leaderboardList.innerHTML = leaderboard.slice(0, 5).map(player => `<p>${player.name}: ${player.score}</p>`).join('');
+
+            finalResult.innerHTML = `
+                <p><strong>Classifica finale:</strong></p>
+                <p>Etico: ${ethicalScore}</p>
+                <p>Salute Pubblica: ${publicHealthScore}</p>
+                <p>Relazioni: ${relationsScore}</p>
+            `;
+
+            if (result === 'positivo') {
+                story.innerHTML = "Congratulazioni! Hai preso decisioni responsabili che hanno avuto un impatto positivo sulla tua comunità.";
+                finalMessage.innerHTML = "Le tue azioni hanno mostrato un forte senso di responsabilità sociale e personale. Continua così!";
+            } else if (result === 'negativo') {
+                story.innerHTML = "La tua decisione di ignorare il vaccino ha portato a conseguenze negative. Molte persone si sono ammalate.";
+                finalMessage.innerHTML = "Le tue azioni hanno avuto un impatto negativo sulla comunità. Riflettici su.";
+            } else {
+                story.innerHTML = "Il gioco è finito. Hai preso decisioni che non hanno avuto né un impatto positivo né negativo.";
+                finalMessage.innerHTML = "Puoi sempre riflettere e cercare di fare scelte migliori in futuro.";
+            }
+
+            choices.innerHTML = "";
+            document.getElementById('feedback').innerHTML = "";
+        }
+    </script>
+</body>
+</html>
+
